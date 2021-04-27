@@ -1,0 +1,34 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: Cloudformation PSV resources template.
+
+Resources:
+###############     Doc Retriever ECR Repo   ###############
+  SequenceAlignmentRepo:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: "sequence-alignment-ecr"
+      RepositoryPolicyText:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowPushPull
+            Effect: Allow
+            Principal:
+              AWS:
+                !Join [":", ["arn:aws:iam:", !Ref AWS::AccountId, user/psv_app]]
+            Action:
+              - "ecr:GetDownloadUrlForLayer"
+              - "ecr:BatchGetImage"
+              - "ecr:BatchCheckLayerAvailability"
+              - "ecr:PutImage"
+              - "ecr:InitiateLayerUpload"
+              - "ecr:UploadLayerPart"
+              - "ecr:CompleteLayerUpload"
+              - "ecr:GetAuthorizationToken"
+
+###############     SAM Stack Template Bucket   ###############
+  SequenceAlignmentStackS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: sequence-alignment-stack-bucket
+      AccessControl: BucketOwnerFullControl
