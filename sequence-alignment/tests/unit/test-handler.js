@@ -3,7 +3,27 @@
 const app = require('../../app.js');
 const chai = require('chai');
 const expect = chai.expect;
-var event, context;
+var context;
+var event = {
+    "body": [
+        {
+            'seq_id': '1',
+            'sequence': 'ACDEFGHIKLMNPQRSTVWY'
+        },
+        {
+            'seq_id': '2',
+            'sequence': 'XXXXACDEFGHIMNXXXPQR'
+        },
+        {
+            'seq_id': '2',
+            'sequence': 'ACDEFGHILMNXXXXXPQRS'
+        },
+        {
+            'seq_id': '1',
+            'sequence': 'XXXACDEFGHIKLMNPQRST'
+        },
+    ]
+}
 
 describe('Tests index', function () {
     it('verifies successful response', async () => {
@@ -16,7 +36,7 @@ describe('Tests index', function () {
         let response = JSON.parse(result.body);
 
         expect(response).to.be.an('object');
-        expect(response.message).to.be.equal("hello world");
+        expect(response.message).to.be.equal('["----ACDEFGHIKLM----NPQRSTVWY","XXXXACDEFGHIMNXXXP---QR-----","----ACDEFGHILMNXXXXXPQRS----","-XXXACDEFGHIKLM----NPQRST---"]');
         // expect(response.location).to.be.an("string");
     });
 });
