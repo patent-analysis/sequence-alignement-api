@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: cd sequence-alignment && npm ci 
       - name: Unit Tests
-        run: cd sequence-alignment && npm test
+        run: chmod 0777 ./clustalo && cd sequence-alignment && npm test
       - name: SAM build
         run: sam build
 
