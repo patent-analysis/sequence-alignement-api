@@ -1,33 +1,15 @@
 'use strict';
 
+const event = require('../../../events/event.json');
 const app = require('../../app.js');
+
 const chai = require('chai');
 const expect = chai.expect;
 var context;
-var event = {
-    "body": [
-        {
-            'seq_id': '1',
-            'sequence': 'ACDEFGHIKLMNPQRSTVWY'
-        },
-        {
-            'seq_id': '2',
-            'sequence': 'XXXXACDEFGHIMNXXXPQR'
-        },
-        {
-            'seq_id': '2',
-            'sequence': 'ACDEFGHILMNXXXXXPQRS'
-        },
-        {
-            'seq_id': '1',
-            'sequence': 'XXXACDEFGHIKLMNPQRST'
-        },
-    ]
-}
 
 describe('Tests index', function () {
     it('verifies successful response', async () => {
-        const result = await app.lambdaHandler(event, context)
+        const result = app.lambdaHandler(event, context)
 
         expect(result).to.be.an('object');
         expect(result.statusCode).to.equal(200);
@@ -36,7 +18,7 @@ describe('Tests index', function () {
         let response = JSON.parse(result.body);
 
         expect(response).to.be.an('object');
-        expect(response.message).to.be.equal('["----ACDEFGHIKLM----NPQRSTVWY","XXXXACDEFGHIMNXXXP---QR-----","----ACDEFGHILMNXXXXXPQRS----","-XXXACDEFGHIKLM----NPQRST---"]');
+        expect(response.message).to.be.equal('[{\"docId\":\"US99485858\",\"seqs\":[{\"seqId\":6,\"claimedResidues\":\"5, 12, 16, 20\",\"value\":\"----ACDEFGHIKLMN-PQRSTVWY\"},{\"seqId\":7,\"claimedResidues\":\"1, 2, 3, 4\",\"value\":\"XXXXACDEFGHIMNXXXPQR-----\"}]},{\"docId\":\"111111111\",\"seqs\":[{\"seqId\":6,\"claimedResidues\":\"1, 2, 3, 4\",\"value\":\"\"},{\"seqId\":7,\"claimedResidues\":\"\",\"value\":\"-XXXACDEFGHIKLMN-PQRST---\"}]}]');
         // expect(response.location).to.be.an("string");
     });
 });

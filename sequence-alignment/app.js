@@ -1,45 +1,95 @@
 // const axios = require('axios')
 // const url = 'http://checkip.amazonaws.com/';
 let response;
-const clustalOmega = require('clustal-omega-wrapper');
+const clustalOmega = require('./clustalOmega.js');
 const OUTPUT_TYPE = 'fasta';
-const CLUSTAL_DIR_PATH = './';
+const CLUSTAL_DIR_PATH = '';
+let error = '';
 
-
-const align_sequences = (sequences) => {
-    clustalOmega.setCustomLocation(CLUSTAL_DIR_PATH);
+const build_fasta_string = (sequences) => {
     let seqNumber = 1;
     let fasta_str = '';
-    const alignedSequences = [];
-    if (sequences) {
-        for (let i = 0; i < sequences.length; i++) {
-            const sequence = sequences[i];
-            if (sequence.sequence && sequence.sequence.length > 0) {
-                fasta_str += `>seq${seqNumber}\n`;
-                fasta_str += `${sequence.sequence}\n`;
-            }
-            seqNumber++;
-        }
-        fasta_str.trimRight();
-        clustalOmega.alignSeqString(fasta_str,OUTPUT_TYPE,function(err,data){
-            if(err){
-                console.error(err);
-            }else{
-                alignedSequences.push(err);
-                const fasta_arr = data.split('\n');
-                for (let i = 0; i < fasta_arr.length; i++) {
-                    if (fasta_arr[i].length <= 0 || fasta_arr[i].startsWith('>seq')) {
-                        continue;
-                    }
-                    alignedSequences.push(fasta_arr[i]);
+    for (let i = 0; i < sequences.length; i++) {
+        const sequence = sequences[i];
+        if (sequence.seqs) {
+            for (let j = 0; j < sequence.seqs.length; j++) {
+                const seq = sequence.seqs[j];
+                if (seq.value) {
+                    fasta_str += `>seq${seqNumber}\n`;
+                    fasta_str += seq.value + '\n';
+                    seqNumber++;
                 }
-                console.error("alignedSequences: ", alignedSequences);
             }
-        });
+        }
+    }
+    return fasta_str.trimRight();
+}
+
+const remap_residues = (old_residues, new_seq) => {
+    const residues = [];
+    let old_residues_ptr = 0;
+    let seq_pos = 1;
+    for (let i = 0; i < new_seq.length; i++) {
+        if (new_seq[i] === '-') {
+            continue;
+        }
+        if (seq_pos === old_residues[old_residues_ptr]) {
+            residues.push(i + 1);
+            old_residues_ptr++;
+            if (old_residues_ptr >= old_residues.length) {
+                break;
+            }
+        }
+        seq_pos++;
+    }
+    return residues.join(', ');
+}
+
+const extract_seq_from_fasta = (sequences, fasta_str) => {
+    const fasta_arr = fasta_str.split('\n');
+    const fasta_arr_clean = [];
+    let fasta_arr_clean_ptr = 0;
+    for (let i = 0; i < fasta_arr.length; i++) {
+        if (fasta_arr[i].startsWith('>seq')) {
+            continue;
+        }
+        fasta_arr_clean.push(fasta_arr[i]);
+    }
+    for (let i = 0; i < sequences.length; i++) {
+        const sequence = sequences[i];
+        if (sequence.seqs) {
+            for (let j = 0; j < sequence.seqs.length; j++) {
+                const seq = sequence.seqs[j];
+                if (seq.value) {
+                    if (seq.claimedResidues) {
+                        const old_residues = seq.claimedResidues.split(',').map(r => parseInt(r.trim()));
+                        const new_residues = remap_residues(old_residues, fasta_arr_clean[fasta_arr_clean_ptr]);
+                        seq.claimedResidues = new_residues;
+                    }
+                    seq.value = fasta_arr_clean[fasta_arr_clean_ptr];
+                    fasta_arr_clean_ptr++;
+                }
+            }
+        }
+    }    
+}
+
+
+const align_sequences = async (sequences) => {
+    clustalOmega.setCustomLocation(CLUSTAL_DIR_PATH);        
+    if (sequences) {
+        let fasta_str = build_fasta_string(sequences);
+        const retString = clustalOmega.alignSeqString(fasta_str, OUTPUT_TYPE);
+
+        if (retString.startsWith('Error')) {
+            error = retString;
+        } else {
+            extract_seq_from_fasta(sequences, retString);
+        }
+        
     } else {
         console.error('No sequences found!');
     }
-    return alignedSequences;
 }
 
 /**
@@ -57,9 +107,13 @@ const align_sequences = (sequences) => {
 exports.lambdaHandler = async (event, context) => {
     try {
         // const ret = await axios(url);
-        console.error("event.body", event.body);
-        const resp = align_sequences(event.body);
-        console.error("resp", resp);
+        await align_sequences(event.body);
+        let resp = '';
+        if (error) {
+            resp = error;
+        } else {
+            resp = event.body;
+        }
         response = {
             'statusCode': 200,
             'body': JSON.stringify({

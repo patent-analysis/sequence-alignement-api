@@ -1,5 +1,20 @@
 {
-  "body": "{\"message\": \"hello world\"}",
+  "body": [
+    {
+        "docId": "US99485858",
+        "seqs": [
+            { "seqId": 6, "claimedResidues": "1, 8, 12, 15", "value": "ACDEFGHIKLMNPQRSTVWY" }, 
+            { "seqId": 7, "claimedResidues": "1, 2, 3, 4", "value": "XXXXACDEFGHIMNXXXPQR"  }
+        ]
+    },
+    {
+        "docId": "111111111",
+        "seqs": [
+            { "seqId": 6, "claimedResidues": "1, 2, 3, 4", "value": "" }, 
+            { "seqId": 7, "claimedResidues": "", "value": "XXXACDEFGHIKLMNPQRST"  }
+        ]
+    }
+],
   "resource": "/{proxy+}",
   "path": "/path/to/resource",
   "httpMethod": "POST",
