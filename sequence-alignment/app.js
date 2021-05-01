@@ -107,12 +107,16 @@ const align_sequences = async (sequences) => {
 exports.lambdaHandler = async (event, context) => {
     try {
         // const ret = await axios(url);
-        await align_sequences(event.body);
+        let body = event.body;
+        if (typeof(body) === "string") {
+            body = JSON.parse(body);
+        }
+        await align_sequences(body);
         let resp = '';
         if (error) {
             resp = error;
         } else {
-            resp = event.body;
+            resp = body;
         }
         response = {
             'statusCode': 200,
