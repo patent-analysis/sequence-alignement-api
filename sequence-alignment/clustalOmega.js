@@ -30,9 +30,9 @@ clustalOmega.alignSeqString = (input, outputFormat) => {
 };
 
 function alignStringSequences(input, outputFormat) {
-    const tempInputFile = `${__dirname}/${uuidv4()}.fasta`;
+    const tempInputFile = `tmp/${uuidv4()}.fasta`;
     fs.writeFileSync(tempInputFile, input);
-    const clustalCommand = `-i ${path.resolve(tempInputFile)} --outfmt=${outputFormat}`;
+    const clustalCommand = `-i ${tempInputFile} --outfmt=${outputFormat}`;
     return run(clustalCommand);
 }
 
