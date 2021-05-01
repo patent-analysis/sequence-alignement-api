@@ -1,6 +1,8 @@
 FROM public.ecr.aws/lambda/nodejs:14
 
-COPY app.js package.json clustalo ./
+COPY app.js package.json clustalo clustalOmega.js ./
+
+RUN chmod +x ./clustalo
 
 RUN npm install
 
