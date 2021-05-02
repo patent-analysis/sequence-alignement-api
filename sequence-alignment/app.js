@@ -34,7 +34,6 @@ const build_fasta_string = (sequences) => {
 }
 
 const remap_residues = (old_residues, new_seq) => {
-    console.info('old_residues', old_residues);
     const residues = [];
     let old_residues_ptr = 0;
     let seq_pos = 1;
@@ -51,7 +50,6 @@ const remap_residues = (old_residues, new_seq) => {
         }
         seq_pos++;
     }
-    console.info('residues', residues);
     return residues.join(', ');
 }
 
