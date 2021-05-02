@@ -32,6 +32,9 @@ Resources:
           Properties:
             Path: /align
             Method: post
+            Cors:
+              AllowMethods: "'POST'"
+              AllowOrigin: "'*'"
     Metadata:
       DockerTag: nodejs14.x-v1
       DockerContext: ./sequence-alignment
