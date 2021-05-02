@@ -55,7 +55,7 @@ function run(command) {
     //const c_process = child_process.exec(fullCommand, {maxBuffer: 1024 * 1000}, callback);
     let result = null;
     try {
-        result = child_process.execSync(fullCommand).toString();
+        result = child_process.execSync(fullCommand, {maxBuffer: 1024 * 1024 * 1000}).toString();
     } catch (error) {
         result = `Error - status code: ${error.status}, message: ${error.message}`;
     }

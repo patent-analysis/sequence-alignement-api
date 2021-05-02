@@ -26,6 +26,7 @@ const build_fasta_string = (sequences) => {
 }
 
 const remap_residues = (old_residues, new_seq) => {
+    console.info('old_residues', old_residues);
     const residues = [];
     let old_residues_ptr = 0;
     let seq_pos = 1;
@@ -42,19 +43,23 @@ const remap_residues = (old_residues, new_seq) => {
         }
         seq_pos++;
     }
+    console.info('residues', residues);
     return residues.join(', ');
 }
 
 const extract_seq_from_fasta = (sequences, fasta_str) => {
-    const fasta_arr = fasta_str.split('\n');
+    console.info("extract_seq_from_fasta.fasta_str", fasta_str);
+    const fasta_arr = fasta_str.replace(/\s+/g, '').split(/>seq\d+/);
+    console.info("extract_seq_from_fasta.fasta_arr", fasta_arr);
     const fasta_arr_clean = [];
     let fasta_arr_clean_ptr = 0;
     for (let i = 0; i < fasta_arr.length; i++) {
-        if (fasta_arr[i].startsWith('>seq')) {
+        if (fasta_arr[i] === '') {
             continue;
         }
         fasta_arr_clean.push(fasta_arr[i]);
     }
+    console.info("extract_seq_from_fasta.fasta_arr_clean", fasta_arr_clean);
     for (let i = 0; i < sequences.length; i++) {
         const sequence = sequences[i];
         if (sequence.seqs) {
@@ -62,8 +67,10 @@ const extract_seq_from_fasta = (sequences, fasta_str) => {
                 const seq = sequence.seqs[j];
                 if (seq.value) {
                     if (seq.claimedResidues) {
-                        const old_residues = seq.claimedResidues.split(',').map(r => parseInt(r.trim()));
+                        const old_residues = seq.claimedResidues.split(', ').map(r => parseInt(r)).sort((a, b) => a-b);
+                        console.info("fasta_arr_clean[fasta_arr_clean_ptr] before remapping", fasta_arr_clean[fasta_arr_clean_ptr]);
                         const new_residues = remap_residues(old_residues, fasta_arr_clean[fasta_arr_clean_ptr]);
+                        console.info("fasta_arr_clean[fasta_arr_clean_ptr] after remapping", fasta_arr_clean[fasta_arr_clean_ptr]);
                         seq.claimedResidues = new_residues;
                     }
                     seq.value = fasta_arr_clean[fasta_arr_clean_ptr];
@@ -79,8 +86,9 @@ const align_sequences = async (sequences) => {
     clustalOmega.setCustomLocation(CLUSTAL_DIR_PATH);        
     if (sequences) {
         let fasta_str = build_fasta_string(sequences);
+        console.info("fasta_str", fasta_str);
         const retString = clustalOmega.alignSeqString(fasta_str, OUTPUT_TYPE);
-
+        console.info("retString", retString);
         if (retString.startsWith('Error')) {
             error = retString;
         } else {
@@ -125,6 +133,7 @@ exports.lambdaHandler = async (event, context) => {
                 // location: ret.data.trim()
             })
         }
+        console.log("response", response);
     } catch (err) {
         console.log(err);
         return err;
