@@ -5,6 +5,7 @@ const clustalOmega = require('./clustalOmega.js');
 const OUTPUT_TYPE = 'fasta';
 const CLUSTAL_DIR_PATH = '';
 let error = '';
+let is_seq_arr = [];
 
 const build_fasta_string = (sequences) => {
     let seqNumber = 1;
@@ -14,9 +15,16 @@ const build_fasta_string = (sequences) => {
         if (sequence.seqs) {
             for (let j = 0; j < sequence.seqs.length; j++) {
                 const seq = sequence.seqs[j];
+                let seqValue = seq.value;
                 if (seq.value) {
+                    if (Array.isArray(seq.value)) {
+                        is_seq_arr.push(true);
+                        seqValue = seqValue.join('');
+                    } else {
+                        is_seq_arr.push(false);
+                    }
                     fasta_str += `>seq${seqNumber}\n`;
-                    fasta_str += seq.value + '\n';
+                    fasta_str += seqValue + '\n';
                     seqNumber++;
                 }
             }
@@ -73,12 +81,16 @@ const extract_seq_from_fasta = (sequences, fasta_str) => {
                         console.info("fasta_arr_clean[fasta_arr_clean_ptr] after remapping", fasta_arr_clean[fasta_arr_clean_ptr]);
                         seq.claimedResidues = new_residues;
                     }
-                    seq.value = fasta_arr_clean[fasta_arr_clean_ptr];
+                    let seqValue = fasta_arr_clean[fasta_arr_clean_ptr];
+                    if (is_seq_arr[fasta_arr_clean_ptr]) {
+                        seqValue = seqValue.split('');
+                    }
+                    seq.value = seqValue;
                     fasta_arr_clean_ptr++;
                 }
             }
         }
-    }    
+    }
 }
 
 
@@ -119,6 +131,7 @@ exports.lambdaHandler = async (event, context) => {
         if (typeof(body) === "string") {
             body = JSON.parse(body);
         }
+        is_seq_arr = [];
         await align_sequences(body);
         let resp = '';
         if (error) {
