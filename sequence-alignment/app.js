@@ -152,8 +152,18 @@ exports.lambdaHandler = async (event, context) => {
         }
         console.log("response", response);
     } catch (err) {
+        response = {
+            'statusCode': 500,
+            'headers': {
+                "Access-Control-Allow-Headers" : "Content-Type",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "OPTIONS,POST,GET"
+            },
+            'body': JSON.stringify({
+                message: "really bad error " + err,
+            })
+        }
         console.log(err);
-        return err;
     }
 
     return response
