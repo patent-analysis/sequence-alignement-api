@@ -1,13 +1,10 @@
 // const axios = require('axios')
 // const url = 'http://checkip.amazonaws.com/';
-let response;
 const clustalOmega = require('./clustalOmega.js');
 const OUTPUT_TYPE = 'fasta';
 const CLUSTAL_DIR_PATH = '';
-let error = '';
-let is_seq_arr = [];
 
-const build_fasta_string = (sequences) => {
+const build_fasta_string = (sequences, is_seq_arr) => {
     let seqNumber = 1;
     let fasta_str = '';
     for (let i = 0; i < sequences.length; i++) {
@@ -53,7 +50,7 @@ const remap_residues = (old_residues, new_seq) => {
     return residues.map(r => r.toString());
 }
 
-const extract_seq_from_fasta = (sequences, fasta_str) => {
+const extract_seq_from_fasta = (sequences, fasta_str, is_seq_arr) => {
     console.info("extract_seq_from_fasta.fasta_str", fasta_str);
     const fasta_arr = fasta_str.replace(/\s+/g, '').split(/>seq\d+/);
     console.info("extract_seq_from_fasta.fasta_arr", fasta_arr);
@@ -93,21 +90,25 @@ const extract_seq_from_fasta = (sequences, fasta_str) => {
 
 
 const align_sequences = async (sequences) => {
-    clustalOmega.setCustomLocation(CLUSTAL_DIR_PATH);        
+    clustalOmega.setCustomLocation(CLUSTAL_DIR_PATH);  
+    let resp = sequences;    
+    let is_seq_arr = [];  
     if (sequences) {
-        let fasta_str = build_fasta_string(sequences);
+        let fasta_str = build_fasta_string(sequences, is_seq_arr);
         console.info("fasta_str", fasta_str);
         const retString = clustalOmega.alignSeqString(fasta_str, OUTPUT_TYPE);
         console.info("retString", retString);
         if (retString.startsWith('Error')) {
-            error = retString;
+            resp = retString;
         } else {
-            extract_seq_from_fasta(sequences, retString);
+            extract_seq_from_fasta(sequences, retString, is_seq_arr);
         }
         
     } else {
         console.error('No sequences found!');
+        resp = 'Error: No sequences found!';
     }
+    return resp;
 }
 
 /**
@@ -123,22 +124,20 @@ const align_sequences = async (sequences) => {
  * 
  */
 exports.lambdaHandler = async (event, context) => {
+    let response = '';
     try {
         // const ret = await axios(url);
         let body = event.body;
+        
         if (typeof(body) === "string") {
             body = JSON.parse(body);
         }
-        is_seq_arr = [];
-        await align_sequences(body);
-        let resp = '';
+        const resp  = await align_sequences(body);
         let status = 200;
-        if (error) {
-            resp = error;
+        
+        if (typeof(resp) === "string" && resp.startsWith('Error')) {
             status = 500;
-        } else {
-            resp = body;
-        }
+        } 
         response = {
             'statusCode': status,
             'headers': {
