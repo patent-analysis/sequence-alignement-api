@@ -132,27 +132,38 @@ exports.lambdaHandler = async (event, context) => {
         is_seq_arr = [];
         await align_sequences(body);
         let resp = '';
+        let status = 200;
         if (error) {
             resp = error;
+            status = 500;
         } else {
             resp = body;
         }
         response = {
-            'statusCode': 200,
+            'statusCode': status,
             'headers': {
-                "Access-Control-Allow-Origin":  "*",
-                "Access-Control-Allow-Headers": "*",
-                "Access-Control-Allow-Methods": "POST",
+                "Access-Control-Allow-Headers" : "Content-Type",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "OPTIONS,POST,GET"
             },
             'body': JSON.stringify({
                 message: resp,
-                // location: ret.data.trim()
             })
         }
         console.log("response", response);
     } catch (err) {
+        response = {
+            'statusCode': 500,
+            'headers': {
+                "Access-Control-Allow-Headers" : "Content-Type",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "OPTIONS,POST,GET"
+            },
+            'body': JSON.stringify({
+                message: "really bad error " + err,
+            })
+        }
         console.log(err);
-        return err;
     }
 
     return response

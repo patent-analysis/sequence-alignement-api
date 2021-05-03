@@ -1,4 +1,4 @@
-FROM public.ecr.aws/lambda/nodejs:14
+FROM amazon/aws-lambda-nodejs:14.2021.04.26.13
 
 COPY app.js package.json clustalo clustalOmega.js ./
 
