@@ -73,6 +73,9 @@ const extract_seq_from_fasta = (sequences, fasta_str) => {
                 const seq = sequence.seqs[j];
                 if (seq.value) {
                     if (seq.claimedResidues) {
+                        console.info('Logging a bunch of stuff now')
+                        console.info(seq);
+                        console.info(seq.claimedResidues);
                         const old_residues = seq.claimedResidues.split(', ').map(r => parseInt(r)).sort((a, b) => a-b);
                         console.info("fasta_arr_clean[fasta_arr_clean_ptr] before remapping", fasta_arr_clean[fasta_arr_clean_ptr]);
                         const new_residues = remap_residues(old_residues, fasta_arr_clean[fasta_arr_clean_ptr]);
