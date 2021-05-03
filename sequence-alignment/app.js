@@ -132,13 +132,15 @@ exports.lambdaHandler = async (event, context) => {
         is_seq_arr = [];
         await align_sequences(body);
         let resp = '';
+        let status = 200;
         if (error) {
             resp = error;
+            status = 500;
         } else {
             resp = body;
         }
         response = {
-            'statusCode': 200,
+            'statusCode': status,
             'headers': {
                 "Access-Control-Allow-Headers" : "Content-Type",
                 "Access-Control-Allow-Origin": "*",
@@ -146,7 +148,6 @@ exports.lambdaHandler = async (event, context) => {
             },
             'body': JSON.stringify({
                 message: resp,
-                // location: ret.data.trim()
             })
         }
         console.log("response", response);
