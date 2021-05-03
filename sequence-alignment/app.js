@@ -50,7 +50,7 @@ const remap_residues = (old_residues, new_seq) => {
         }
         seq_pos++;
     }
-    return residues.join(', ');
+    return residues.map(r => r.toString());
 }
 
 const extract_seq_from_fasta = (sequences, fasta_str) => {
@@ -73,7 +73,7 @@ const extract_seq_from_fasta = (sequences, fasta_str) => {
                 const seq = sequence.seqs[j];
                 if (seq.value) {
                     if (seq.claimedResidues) {
-                        const old_residues = seq.claimedResidues.split(', ').map(r => parseInt(r)).sort((a, b) => a-b);
+                        const old_residues = seq.claimedResidues.map(r => parseInt(r)).sort((a, b) => a-b);
                         console.info("fasta_arr_clean[fasta_arr_clean_ptr] before remapping", fasta_arr_clean[fasta_arr_clean_ptr]);
                         const new_residues = remap_residues(old_residues, fasta_arr_clean[fasta_arr_clean_ptr]);
                         console.info("fasta_arr_clean[fasta_arr_clean_ptr] after remapping", fasta_arr_clean[fasta_arr_clean_ptr]);
@@ -142,7 +142,7 @@ exports.lambdaHandler = async (event, context) => {
             'headers': {
                 "Access-Control-Allow-Origin":  "*",
                 "Access-Control-Allow-Headers": "*",
-                "Access-Control-Allow-Methods": "*",
+                "Access-Control-Allow-Methods": "POST",
             },
             'body': JSON.stringify({
                 message: resp,
